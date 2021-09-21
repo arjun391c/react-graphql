@@ -1,24 +1,38 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import {BrowserRouter as Router, Switch, Route} from 'react-router-dom'
+import { useState, useEffect } from 'react';
+//pages
+import HomePage from './pages/homePage/HomePage';
+import ShopPage from './pages/shopPage/ShopPage';
+//component
+import Header from './components/header/Header';
+import SignInPage from './pages/signInPage/SignInPage';
+//utils
+import { auth, createUserProfileDocument } from './utils/firebase'
+import { IFirebaseUser } from './utils/types/firebaseUser'
 
-function App() {
+const App: React.FC = () => {
+  const [currentUser, setCurrentUser] = useState<IFirebaseUser | {} | null>({})
+
+  useEffect(() => {
+    const subscribeAuth = auth.onAuthStateChanged((user) => {
+      setCurrentUser(user)
+
+      createUserProfileDocument(user)
+    })
+
+    return subscribeAuth
+  }, [])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div> 
+      <Router>
+        <Header currentUser={currentUser}/>
+        <Switch>
+          <Route path="/" exact component={HomePage}/>
+          <Route path="/shop" component={ShopPage}/>
+          <Route path="/signin" component={SignInPage}/>
+        </Switch>
+      </Router>
     </div>
   );
 }
